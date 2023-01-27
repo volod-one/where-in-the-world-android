@@ -21,6 +21,7 @@ sealed interface CountriesUiState {
         val rawCountries: List<Country>,
         val countries: List<Country> = rawCountries,
         val filterInput: String = "",
+        val currentCountry: Country? = null
     ) : CountriesUiState
 
     object Loading : CountriesUiState
@@ -63,6 +64,17 @@ class CountriesViewModel(private val countriesRepository: CountriesRepository) :
                 } else {
                     prevUiState.rawCountries
                 }
+            )
+        }
+    }
+
+    fun selectCountry(country: Country) {
+        val prevUiState = countriesUiState as CountriesUiState.Success
+        if (countriesUiState is CountriesUiState.Success) {
+            countriesUiState = CountriesUiState.Success(
+                rawCountries = prevUiState.rawCountries,
+                countries = prevUiState.countries,
+                currentCountry = country
             )
         }
     }
