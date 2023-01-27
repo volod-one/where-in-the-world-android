@@ -38,7 +38,7 @@ fun CountriesScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -99,8 +99,10 @@ fun CountriesList(countries: List<Country>, modifier: Modifier = Modifier) {
 
 @Composable
 fun CountryCard(country: Country, modifier: Modifier = Modifier) {
-    val countryCommonName = country.name?.common ?: "Unknown Country"
+    val countryCommonName = country.name?.common
     val population = country.population
+    val region = country.region
+    val capital = country.capital?.get(0)
     Card(
         modifier = modifier
             .padding(4.dp),
@@ -126,25 +128,52 @@ fun CountryCard(country: Country, modifier: Modifier = Modifier) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp, 16.dp, 16.dp, 8.dp)
+                    .padding(16.dp, 16.dp, 16.dp, 12.dp)
             ) {
                 Text(
-                    text = countryCommonName,
+                    text = countryCommonName ?: stringResource(R.string.unknown),
                     modifier = Modifier,
                     style = MaterialTheme.typography.h6,
                     overflow = TextOverflow.Ellipsis,
                     softWrap = false
                 )
-                Text(
-                    text = stringResource(
-                        R.string.population, when (population != null) {
-                            true -> String.format("%,d", population)
-                            else -> "Unknown"
-                        }
-                    ),
-                    modifier = Modifier,
-                    style = MaterialTheme.typography.body2,
-                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.population, when (population != null) {
+                                true -> String.format("%,d", population)
+                                else -> stringResource(R.string.unknown)
+                            }
+                        ),
+                        modifier = Modifier,
+                        style = MaterialTheme.typography.body2,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.region,
+                            region ?: stringResource(R.string.unknown)
+                        ),
+                        modifier = Modifier,
+                        style = MaterialTheme.typography.body2,
+                        overflow = TextOverflow.Ellipsis,
+                        softWrap = false
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.capital,
+                            capital ?: stringResource(R.string.unknown)
+                        ),
+                        modifier = Modifier,
+                        style = MaterialTheme.typography.body2,
+                        overflow = TextOverflow.Ellipsis,
+                        softWrap = false
+                    )
+                }
             }
         }
     }
