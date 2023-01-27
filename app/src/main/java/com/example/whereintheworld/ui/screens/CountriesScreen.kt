@@ -1,5 +1,6 @@
 package com.example.whereintheworld.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -7,7 +8,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -65,13 +66,14 @@ fun CountriesScreen(
                         onDone = { focusManager.clearFocus() }
                     ),
                     trailingIcon = {
-                        if (input.isNotBlank()) {
+                        AnimatedVisibility(visible = input.isNotBlank()) {
                             Text(
                                 text = countriesCounter,
                                 style = MaterialTheme.typography.caption,
                                 modifier = Modifier.padding(end = 8.dp)
                             )
                         }
+
                     },
                     singleLine = true,
                     leadingIcon = {
