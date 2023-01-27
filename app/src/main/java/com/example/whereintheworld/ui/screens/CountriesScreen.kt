@@ -128,7 +128,7 @@ fun CountryCard(country: Country, modifier: Modifier = Modifier) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp, 16.dp, 16.dp, 12.dp)
+                    .padding(12.dp, 16.dp, 12.dp, 12.dp)
             ) {
                 Text(
                     text = countryCommonName ?: stringResource(R.string.unknown),
