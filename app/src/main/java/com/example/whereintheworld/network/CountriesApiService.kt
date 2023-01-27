@@ -6,5 +6,5 @@ import retrofit2.http.GET
 // Defining endpoints and required data type
 interface CountriesApiService {
     @GET("all")
-    fun getAllCountries(): List<Country>
+    suspend fun getAllCountries(): List<Country>
 }
