@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Where In The World</string>
     <string name="population">Population: %s</string>
+    <string name="search_for_a_country">Search for a country</string>
 </resources>
