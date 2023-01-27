@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Where In The World</string>
+    <string name="population">Population: %s</string>
 </resources>

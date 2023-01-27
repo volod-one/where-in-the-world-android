@@ -17,7 +17,12 @@ import retrofit2.HttpException
 import java.io.IOException
 
 sealed interface CountriesUiState {
-    data class Success(val countries: List<Country>) : CountriesUiState
+    data class Success(
+        val rawCountries: List<Country>,
+        val countries: List<Country> = rawCountries,
+        val filterInput: String = "",
+    ) : CountriesUiState
+
     object Loading : CountriesUiState
     object Error : CountriesUiState
 }
@@ -35,12 +40,30 @@ class CountriesViewModel(private val countriesRepository: CountriesRepository) :
         viewModelScope.launch {
             countriesUiState = CountriesUiState.Loading
             countriesUiState = try {
-                CountriesUiState.Success(countriesRepository.getAllCountries())
+                CountriesUiState.Success(rawCountries = countriesRepository.getAllCountries())
             } catch (e: IOException) {
                 CountriesUiState.Error
             } catch (e: HttpException) {
                 CountriesUiState.Error
             }
+        }
+    }
+
+    fun updateFilter(input: String) {
+        val prevUiState = countriesUiState as CountriesUiState.Success
+        if (countriesUiState is CountriesUiState.Success) {
+            countriesUiState = CountriesUiState.Success(
+                filterInput = input,
+                rawCountries = prevUiState.rawCountries,
+                countries = if (input.isNotBlank()) {
+                    println(input)
+                    prevUiState.rawCountries.filter {
+                        it.name?.common?.lowercase()?.contains(input.lowercase())!!
+                    }
+                } else {
+                    prevUiState.rawCountries
+                }
+            )
         }
     }
 
