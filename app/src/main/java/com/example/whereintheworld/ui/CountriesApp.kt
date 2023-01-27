@@ -37,6 +37,7 @@ fun HomeScreen(
             input = uiState.filterInput,
             countries = uiState.countries,
             modifier = modifier,
+            countriesCounter = "${uiState.countries.size}/${uiState.rawCountries.size}",
             onInputChange = onInputChange
         )
     }

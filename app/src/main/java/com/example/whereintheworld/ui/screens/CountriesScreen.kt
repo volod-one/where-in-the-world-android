@@ -28,6 +28,7 @@ import com.example.whereintheworld.model.Country
 fun CountriesScreen(
     input: String,
     countries: List<Country>,
+    countriesCounter: String,
     onInputChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -63,6 +64,15 @@ fun CountriesScreen(
                     keyboardActions = KeyboardActions(
                         onDone = { focusManager.clearFocus() }
                     ),
+                    trailingIcon = {
+                        if (input.isNotBlank()) {
+                            Text(
+                                text = countriesCounter,
+                                style = MaterialTheme.typography.caption,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+                    },
                     singleLine = true,
                     leadingIcon = {
                         Icon(
