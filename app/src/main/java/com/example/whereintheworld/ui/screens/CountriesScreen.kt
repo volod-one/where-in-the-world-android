@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.example.whereintheworld.R
 import com.example.whereintheworld.model.Country
@@ -138,7 +139,8 @@ fun CountryCard(
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(context = LocalContext.current)
-                    .data(country.flags?.get("png"))
+                    .data(country.flags?.get("svg"))
+                    .decoderFactory(SvgDecoder.Factory())
                     .crossfade(true)
                     .build(),
                 contentDescription = null,
