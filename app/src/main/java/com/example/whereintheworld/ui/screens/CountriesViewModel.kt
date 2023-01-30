@@ -1,91 +1,114 @@
 package com.example.whereintheworld.ui.screens
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.whereintheworld.CountriesApplication
-import com.example.whereintheworld.data.CountriesRepository
 import com.example.whereintheworld.model.Country
-import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
+import com.example.whereintheworld.model.CategoryFilter
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-sealed interface CountriesUiState {
-    data class Success(
-        val rawCountries: List<Country>,
-        val countries: List<Country> = rawCountries,
-        val filterInput: String = "",
-        val currentCountry: Country? = null
-    ) : CountriesUiState
+data class CountriesUiState(
+    val rawCountries: List<Country>,
+    val countries: List<Country> = rawCountries,
+    val inputFilter: String = "",
+    val currentCountryStack: List<Country> = mutableListOf(),
+    val categories: List<CategoryFilter>
+)
 
-    object Loading : CountriesUiState
-    object Error : CountriesUiState
-}
+class CountriesViewModel(private val rawCountries: List<Country>) : ViewModel() {
+    private var categories = mutableStateListOf<CategoryFilter>()
 
-class CountriesViewModel(private val countriesRepository: CountriesRepository) : ViewModel() {
 
-    var countriesUiState: CountriesUiState by mutableStateOf(CountriesUiState.Loading)
-        private set
+    private val _countriesUiState =
+        MutableStateFlow(CountriesUiState(rawCountries = rawCountries, categories = categories))
+    val countriesUiState: StateFlow<CountriesUiState> = _countriesUiState.asStateFlow()
 
     init {
-        setAllCountries()
+        setCategories()
     }
 
-    fun setAllCountries() {
-        viewModelScope.launch {
-            countriesUiState = CountriesUiState.Loading
-            countriesUiState = try {
-                CountriesUiState.Success(rawCountries = countriesRepository.getAllCountries())
-            } catch (e: IOException) {
-                CountriesUiState.Error
-            } catch (e: HttpException) {
-                CountriesUiState.Error
-            }
-        }
-    }
-
-    fun updateFilter(input: String) {
-        val prevUiState = countriesUiState as CountriesUiState.Success
-        if (countriesUiState is CountriesUiState.Success) {
-            countriesUiState = CountriesUiState.Success(
-                filterInput = input,
-                rawCountries = prevUiState.rawCountries,
+    // InApp input handler
+    // When user enter some value, filter all list base on input
+    fun updateInputFilter(input: String = "") {
+        _countriesUiState.update { curState ->
+            curState.copy(
+                inputFilter = input,
                 countries = if (input.isNotBlank()) {
-                    println(input)
-                    prevUiState.rawCountries.filter {
+                    rawCountries.filter {
                         it.name?.common?.lowercase()?.contains(input.lowercase())!!
                     }
                 } else {
-                    prevUiState.rawCountries
+                    curState.rawCountries
                 }
             )
         }
     }
 
-    fun selectCountry(country: Country) {
-        val prevUiState = countriesUiState as CountriesUiState.Success
-        if (countriesUiState is CountriesUiState.Success) {
-            countriesUiState = CountriesUiState.Success(
-                rawCountries = prevUiState.rawCountries,
-                countries = prevUiState.countries,
-                currentCountry = country
+    // When user selects chips, filter list base on selections
+    fun selectCategoryFilter(category: CategoryFilter) {
+        val newList = mutableListOf<CategoryFilter>()
+        countriesUiState.value.categories.forEach {
+            when (it) {
+                category -> newList.add(CategoryFilter(it.title, !it.isSelected))
+                else -> newList.add(it)
+            }
+        }
+        categories.clear()
+        categories.addAll(newList)
+        _countriesUiState.update { curState ->
+            curState.copy(
+                categories = categories,
+                // if category is not selected, do nothing
+                countries = if (categories.none { it.isSelected }) {
+                    curState.rawCountries
+                } else {
+                    val selectedCategories = curState.categories.filter { it.isSelected }
+                    // if category selected, show only selected
+                    curState.rawCountries.filter { country ->
+                        selectedCategories.any { categoryFilter -> categoryFilter.title == country.region }
+                    }
+                }
             )
         }
     }
 
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val application = (this[APPLICATION_KEY] as CountriesApplication)
-                val countriesRepository = application.container.countriesRepository
-                CountriesViewModel(countriesRepository)
+    // initially create dynamic categories for chips
+    private fun setCategories() {
+        val temp = mutableSetOf<CategoryFilter>()
+        countriesUiState.value.countries.forEach {
+            if (it.region != null) {
+                temp.add(CategoryFilter(title = it.region))
             }
+        }
+        categories.addAll(temp.toList())
+
+        _countriesUiState.update { curState ->
+            curState.copy(categories = categories)
+        }
+    }
+
+    // When user selects a country, put it in stack (required for navigation)
+    fun selectCountry(country: Country) {
+        _countriesUiState.update { curState ->
+            curState.copy(
+                currentCountryStack = curState.currentCountryStack.plus(country)
+            )
+        }
+    }
+
+    // When user go on previous page, remove item from stack (required for navigation)
+    fun stepBack() {
+        if (countriesUiState.value.currentCountryStack.isNotEmpty()) {
+            _countriesUiState.value.currentCountryStack.dropLast(1)
+        }
+    }
+
+    // When user go to home page, clear stack (required for navigation)
+    fun clearCountryStack() {
+        _countriesUiState.update { curState ->
+            curState.copy(currentCountryStack = mutableListOf())
         }
     }
 }

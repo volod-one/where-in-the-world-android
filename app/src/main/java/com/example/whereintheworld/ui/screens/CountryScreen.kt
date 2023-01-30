@@ -7,8 +7,11 @@ import androidx.compose.ui.Modifier
 import com.example.whereintheworld.model.Country
 
 @Composable
-fun CountryScreen(country: Country, modifier: Modifier = Modifier) {
+fun CountryScreen(
+    modifier: Modifier = Modifier,
+    country: Country? = null
+) {
     Column(modifier = modifier) {
-        Text(text = country.name?.common!!)
+        Text(text = country?.name?.common ?: "Not selected")
     }
 }

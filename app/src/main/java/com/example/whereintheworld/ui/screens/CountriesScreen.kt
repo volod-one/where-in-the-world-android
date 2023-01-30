@@ -3,15 +3,20 @@ package com.example.whereintheworld.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -25,14 +30,17 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.whereintheworld.R
 import com.example.whereintheworld.model.Country
+import com.example.whereintheworld.model.CategoryFilter
 
 @Composable
 fun CountriesScreen(
     input: String,
     countries: List<Country>,
     countriesCounter: String,
+    categories: List<CategoryFilter>,
     onInputChange: (String) -> Unit,
     onCountryClick: (Country) -> Unit,
+    onFilterClick: (CategoryFilter) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
@@ -54,7 +62,7 @@ fun CountriesScreen(
                     onDone = { focusManager.clearFocus() }
                 ),
                 trailingIcon = {
-                    AnimatedVisibility(visible = input.isNotBlank()) {
+                    AnimatedVisibility(visible = input.isNotBlank() || categories.any { it.isSelected }) {
                         Text(
                             text = countriesCounter,
                             style = MaterialTheme.typography.caption,
@@ -72,6 +80,12 @@ fun CountriesScreen(
                 },
             )
         }
+
+        ChipList(
+            chipCategories = categories,
+            modifier = Modifier.padding(horizontal = 12.dp),
+            onFilterClick = onFilterClick
+        )
 
         CountriesList(
             countries = countries,
@@ -184,6 +198,35 @@ fun CountryCard(
                     )
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChipList(
+    modifier: Modifier = Modifier,
+    chipCategories: List<CategoryFilter>,
+    onFilterClick: (CategoryFilter) -> Unit,
+) {
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(chipCategories) { category ->
+            FilterChip(
+                selected = category.isSelected,
+                leadingIcon = {
+                    AnimatedVisibility(visible = category.isSelected) {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = "Selected"
+                        )
+                    }
+                },
+                label = { Text(text = category.title) },
+                onClick = { onFilterClick(category) }
+            )
         }
     }
 }
