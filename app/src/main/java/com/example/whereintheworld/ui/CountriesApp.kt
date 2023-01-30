@@ -1,22 +1,29 @@
 package com.example.whereintheworld.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.whereintheworld.R
 import com.example.whereintheworld.model.Country
 import com.example.whereintheworld.ui.screens.*
 
-enum class AppScreens {
-    CountriesScreen, CountryScreen
+enum class AppScreens(@StringRes val title: Int) {
+    CountriesScreen(title = R.string.app_name), CountryScreen(title = R.string.country)
 }
 
 @Composable
@@ -35,6 +42,7 @@ fun CountriesApp() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     uiState: CountriesUiState,
@@ -48,25 +56,51 @@ fun HomeScreen(
         is CountriesUiState.Error -> ErrorScreen(onClick = onTryAgain)
         is CountriesUiState.Success -> {
             val navController = rememberNavController()
+            val backStackEntry by navController.currentBackStackEntryAsState()
+            val currentScreen = AppScreens.valueOf(
+                backStackEntry?.destination?.route ?: AppScreens.CountriesScreen.name
+            )
 
             Scaffold(
                 topBar = {
-                    TopAppBar(
-                        navigationIcon = {
-                            IconButton(onClick = {
-                                // TODO
-                            }) {
-                                Icon(
-                                    painter = painterResource(R.drawable.baseline_arrow_back_24),
-                                    contentDescription = null
-                                )
-                            }
-                        },
+                    CenterAlignedTopAppBar(
                         title = {
+                            println(currentScreen)
                             Text(
-                                text = stringResource(R.string.app_name),
+                                text = when (currentScreen) {
+                                    AppScreens.CountriesScreen -> stringResource(R.string.app_name)
+                                    AppScreens.CountryScreen -> stringResource(
+                                        R.string.country,
+                                        uiState.currentCountry?.name?.common ?: "Unknown"
+                                    )
+                                },
                                 style = MaterialTheme.typography.h5,
                             )
+                        },
+                        navigationIcon = {
+                            if (navController.previousBackStackEntry != null) {
+                                IconButton(onClick = { navController.navigateUp() }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.ArrowBack,
+                                        contentDescription = "Go back"
+                                    )
+                                }
+                            }
+                        },
+                        actions = {
+                            if (navController.previousBackStackEntry != null) {
+                                IconButton(onClick = {
+                                    navController.popBackStack(
+                                        AppScreens.CountriesScreen.name,
+                                        false
+                                    )
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Home,
+                                        contentDescription = "Go to start"
+                                    )
+                                }
+                            }
                         }
                     )
                 }

@@ -9,13 +9,14 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -24,7 +25,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.whereintheworld.R
 import com.example.whereintheworld.model.Country
-
 
 @Composable
 fun CountriesScreen(
@@ -40,8 +40,11 @@ fun CountriesScreen(
     Column(
         modifier = modifier,
     ) {
-        Card(elevation = 4.dp) {
-            TextField(
+        Card(
+            elevation = 4.dp,
+            modifier = Modifier.padding(horizontal = 12.dp)
+        ) {
+            OutlinedTextField(
                 value = input,
                 onValueChange = onInputChange,
                 placeholder = { Text(text = stringResource(R.string.search_for_a_country)) },
@@ -63,7 +66,7 @@ fun CountriesScreen(
                 singleLine = true,
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_search_24),
+                        imageVector = Icons.Filled.Search,
                         contentDescription = "search"
                     )
                 },
