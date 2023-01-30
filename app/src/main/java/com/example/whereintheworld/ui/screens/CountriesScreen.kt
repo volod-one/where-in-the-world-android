@@ -86,7 +86,7 @@ fun CountriesList(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(8.dp),
         modifier = modifier
     ) {
         items(countries, key = { item -> item.name?.common!! }) { country ->
@@ -172,7 +172,7 @@ fun CountryCard(
                     Text(
                         text = stringResource(
                             R.string.capital,
-                            capital ?: stringResource(R.string.unknown)
+                            capital ?: "-"
                         ),
                         modifier = Modifier,
                         style = MaterialTheme.typography.body2,
